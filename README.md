@@ -101,6 +101,8 @@ Weather_Data_PIPELINE/
    - Ensures the pipeline stays up-to-date automatically
 
 ---
+### 🔗 LIVE APP DEMO visit:
+https://weatherdatapipeline-8wmwjx4jjimgpegrsqetyc.streamlit.app/
 
 ## 📊 Data Flow
 
