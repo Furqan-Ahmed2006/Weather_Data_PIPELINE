@@ -3,6 +3,7 @@ import streamlit as st
 import requests
 import pandas as pd
 from datetime import datetime
+import pytz
 from streamlit_autorefresh import st_autorefresh
 
 st.set_page_config(page_title="Lahore Weather Forecast", page_icon="☀️", layout="wide")
@@ -23,7 +24,8 @@ st.markdown("""
 
 
 st_autorefresh(interval=10000, key="google_weather_refresh")
-
+pk_tz = pytz.timezone('Asia/Karachi')
+pk_now = datetime.now(pk_tz)
 
 def get_weather_condition(code, is_day=True):
     if code in [0, 1]:
