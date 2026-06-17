@@ -4,3 +4,4 @@ scikit-learn
 mysql-connector-python
 python-dotenv
 streamlit
+streamlit-autorefresh
