@@ -8,7 +8,6 @@ from streamlit_autorefresh import st_autorefresh
 
 st.set_page_config(page_title="Lahore Weather Forecast", page_icon="☀️", layout="wide")
 
-
 st.markdown("""
     <style>
     .main { background-color: #111216; }
@@ -21,7 +20,6 @@ st.markdown("""
     .hourly-card { background-color: #1A1C23; padding: 10px; border-radius: 8px; text-align: center; min-width: 80px; border: 1px solid #2D313E; }
     </style>
 """, unsafe_allow_html=True)
-
 
 st_autorefresh(interval=10000, key="google_weather_refresh")
 pk_tz = pytz.timezone('Asia/Karachi')
@@ -42,15 +40,12 @@ def get_weather_condition(code, is_day=True):
         return "Thunderstorm"
     return "Clear" if not is_day else "Sunny"
 
-
 try:
     with open("weather_model.pkl", "rb") as f:
         model = pickle.load(f)
 except FileNotFoundError:
     st.error("Model file 'weather_model.pkl' not found.")
     st.stop()
-
-
 @st.cache_data(ttl=600)
 def fetch_live_forecast():
     url = "https://api.open-meteo.com/v1/forecast?latitude=31.5497&longitude=74.3436&hourly=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code&timezone=Asia%2FKarachi&forecast_days=3"
@@ -58,9 +53,7 @@ def fetch_live_forecast():
     if response.status_code == 200:
         return response.json()
     return None
-
 data = fetch_live_forecast()
-
 if data:
     hourly_data = data["hourly"]
     df = pd.DataFrame(hourly_data)
@@ -72,25 +65,20 @@ if data:
         "weather_code": "WeatherCode"
     }, inplace=True)
     
-    df["Timestamp_dt"] = pd.to_datetime(df["Timestamp"])
-    
-    current_hour = datetime.now().replace(minute=0, second=0, microsecond=0)
+    df["Timestamp_dt"] = pd.to_datetime(df["Timestamp"]).dt.tz_localize(None)
+    current_hour = pk_now.replace(minute=0, second=0, microsecond=0).replace(tzinfo=None)
     live_row_match = df[df["Timestamp_dt"] == current_hour]
     latest_row = live_row_match.iloc[0] if not live_row_match.empty else df.iloc[0]
     
-    current_hour_int = datetime.now().hour
+    current_hour_int = pk_now.hour
     is_daytime = 6 <= current_hour_int < 19
     current_condition = get_weather_condition(latest_row['WeatherCode'], is_day=is_daytime)
-    
-    # ML Predictions
     X_live = df[["Actual Temperature", "Humidity", "Wind Speed"]].copy()
     X_live.columns = ["temperature", "humidity", "wind_speed"]
     df["ML Predicted Temp"] = model.predict(X_live)
 
-    
     st.markdown("<h2 style='margin-bottom:0;'>📍 Lahore, Pakistan</h2>", unsafe_allow_html=True)
-    st.markdown(f"<p style='color:#8A90A6;'>Weather • {datetime.now().strftime('%A %I:%M %p')} • {current_condition}</p>", unsafe_allow_html=True)
-    
+    st.markdown(f"<p style='color:#8A90A6;'>Weather • {pk_now.strftime('%A %I:%M %p')} • {current_condition}</p>", unsafe_allow_html=True)
     
     col_temp, col_metrics = st.columns([1, 2])
     
