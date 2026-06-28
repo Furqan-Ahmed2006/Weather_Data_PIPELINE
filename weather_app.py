@@ -67,7 +67,7 @@ def fetch_backup_data_from_db():
         conn = mysql.connector.connect(
             host=os.getenv("DB_HOST"),
             user=os.getenv("DB_USER"),
-            port=os.getenv("DB_PORT"),
+            port=int(os.getenv("DB_PORT",27376)),
             password=os.getenv("DB_PASSWORD"),
             database=os.getenv("DB_NAME")
         )
