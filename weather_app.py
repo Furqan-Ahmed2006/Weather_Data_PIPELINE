@@ -5,6 +5,10 @@ import pandas as pd
 from datetime import datetime
 import pytz
 from streamlit_autorefresh import st_autorefresh
+import mysql.connector
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 st.set_page_config(page_title="Lahore Weather Forecast", page_icon="☀️", layout="wide")
 
@@ -46,15 +50,57 @@ try:
 except FileNotFoundError:
     st.error("Model file 'weather_model.pkl' not found.")
     st.stop()
+
 @st.cache_data(ttl=600)
 def fetch_live_forecast():
     url = "https://api.open-meteo.com/v1/forecast?latitude=31.5497&longitude=74.3436&hourly=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code&timezone=Asia%2FKarachi&forecast_days=3"
-    response = requests.get(url)
-    if response.status_code == 200:
-        return response.json()
+    try:
+        response = requests.get(url, timeout=5)
+        if response.status_code == 200:
+            return response.json()
+    except Exception:
+        return None
+    return None
+
+def fetch_backup_data_from_db():
+    try:
+        conn = mysql.connector.connect(
+            host=os.getenv("DB_HOST"),
+            user=os.getenv("DB_USER"),
+            port=os.getenv("DB_PORT"),
+            password=os.getenv("DB_PASSWORD"),
+            database=os.getenv("DB_NAME")
+        )
+        query = "SELECT timestamp as time, temperature as temperature_2m, humidity as relative_humidity_2m, wind_speed as wind_speed_10m, weather_code FROM your_table_name ORDER BY timestamp DESC LIMIT 72"
+        df_db = pd.read_sql(query, conn)
+        conn.close()
+        if not df_db.empty:
+            formatted_data = {
+                "hourly": {
+                    "time": df_db["time"].tolist(),
+                    "temperature_2m": df_db["temperature_2m"].tolist(),
+                    "relative_humidity_2m": df_db["relative_humidity_2m"].tolist(),
+                    "wind_speed_10m": df_db["wind_speed_10m"].tolist(),
+                    "weather_code": df_db["weather_code"].tolist()
+                }
+            }
+            return formatted_data
+    except Exception as e:
+        print(f"Database Fallback Error: {e}")
+        return None
     return None
 data = fetch_live_forecast()
+is_fallback_active = False
+
+if not data:
+    data = fetch_backup_data_from_db()
+    if data:
+        is_fallback_active = True
+
 if data:
+    if is_fallback_active:
+        st.warning("⚠️ Live API rate-limited! Serving latest cached snapshot from pipeline database.")
+
     hourly_data = data["hourly"]
     df = pd.DataFrame(hourly_data)
     df.rename(columns={
@@ -136,4 +182,4 @@ if data:
     st.line_chart(chart_df[["Actual Temperature", "ML Predicted Temp"]], color=["#F8B125", "#4285F4"])
 
 else:
-    st.error("Failed to fetch live data from Open-Meteo API.")
+    st.error("Failed to fetch live data from Open-Meteo API and local Database Cache.")
