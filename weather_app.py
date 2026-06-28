@@ -71,17 +71,19 @@ def fetch_backup_data_from_db():
             password=os.getenv("DB_PASSWORD"),
             database=os.getenv("DB_NAME")
         )
-        query = "SELECT timestamp as time, temperature as temperature_2m, humidity as relative_humidity_2m, wind_speed as wind_speed_10m, weather_code FROM your_table_name ORDER BY timestamp DESC LIMIT 72"
+        query = "SELECT timestamp, temperature, humidity, wind_speed FROM df_latest ORDER BY timestamp DESC LIMIT 72"
         df_db = pd.read_sql(query, conn)
         conn.close()
+        
         if not df_db.empty:
+            df_db = df_db.iloc[::-1]
             formatted_data = {
                 "hourly": {
-                    "time": df_db["time"].tolist(),
-                    "temperature_2m": df_db["temperature_2m"].tolist(),
-                    "relative_humidity_2m": df_db["relative_humidity_2m"].tolist(),
-                    "wind_speed_10m": df_db["wind_speed_10m"].tolist(),
-                    "weather_code": df_db["weather_code"].tolist()
+                    "time": df_db["timestamp"].tolist(),
+                    "temperature_2m": df_db["temperature"].astype(float).tolist(),
+                    "relative_humidity_2m": df_db["humidity"].astype(int).tolist(),
+                    "wind_speed_10m": df_db["wind_speed"].astype(float).tolist(),
+                    "weather_code": [0] * len(df_db) 
                 }
             }
             return formatted_data
