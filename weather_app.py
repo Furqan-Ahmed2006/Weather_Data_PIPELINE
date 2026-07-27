@@ -64,7 +64,6 @@ def fetch_live_forecast():
 
 def fetch_backup_data_from_db():
     try:
-        # Streamlit Secrets ko pehle fallback do, phir os.getenv
         db_host = st.secrets.get("DB_HOST", os.getenv("DB_HOST", ""))
         db_user = st.secrets.get("DB_USER", os.getenv("DB_USER", ""))
         db_password = st.secrets.get("DB_PASSWORD", os.getenv("DB_PASSWORD", ""))
