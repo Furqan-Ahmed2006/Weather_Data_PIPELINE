@@ -64,13 +64,24 @@ def fetch_live_forecast():
 
 def fetch_backup_data_from_db():
     try:
+        # Streamlit Secrets ko pehle fallback do, phir os.getenv
+        db_host = st.secrets.get("DB_HOST", os.getenv("DB_HOST", ""))
+        db_user = st.secrets.get("DB_USER", os.getenv("DB_USER", ""))
+        db_password = st.secrets.get("DB_PASSWORD", os.getenv("DB_PASSWORD", ""))
+        db_name = st.secrets.get("DB_NAME", os.getenv("DB_NAME", ""))
+        db_port = int(st.secrets.get("DB_PORT", os.getenv("DB_PORT", 27376)))
+        if db_host:
+            db_host = db_host.strip().replace("https://", "").replace("http://", "")
+
         conn = mysql.connector.connect(
-            host=os.getenv("DB_HOST"),
-            user=os.getenv("DB_USER"),
-            port=int(os.getenv("DB_PORT",27376)),
-            password=os.getenv("DB_PASSWORD"),
-            database=os.getenv("DB_NAME")
+            host=db_host,
+            user=db_user,
+            port=db_port,
+            password=db_password,
+            database=db_name,
+            connection_timeout=10
         )
+        
         query = "SELECT timestamp, temperature, humidity, wind_speed FROM df_latest ORDER BY timestamp DESC LIMIT 72"
         df_db = pd.read_sql(query, conn)
         conn.close()
