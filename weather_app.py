@@ -88,7 +88,7 @@ def fetch_backup_data_from_db():
             }
             return formatted_data
     except Exception as e:
-        print(f"Database Fallback Error: {e}")
+        st.error(f"Database Fallback Error: {e}")
         return None
     return None
 data = fetch_live_forecast()
