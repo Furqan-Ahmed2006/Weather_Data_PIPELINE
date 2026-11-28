@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 psycopg2-binary
 python-dotenv
 pandas
@@ -6,3 +7,13 @@ scikit-learn
 streamlit
 streamlit-autorefresh
 pytz
+=======
+requests
+pandas
+scikit-learn==1.7.2
+mysql-connector-python
+python-dotenv
+streamlit
+streamlit-autorefresh
+pytz
+>>>>>>> b9d1a622314cbeca2dba4c8b816281b90ff2af60

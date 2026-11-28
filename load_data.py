@@ -46,7 +46,7 @@ def load_data_to_db():
         for _, row in df.iterrows()
     ]
 
-    # Latest 72 rows for dashboard fallback
+
     latest_df = df.tail(72)
     latest_rows = [
         (
@@ -97,7 +97,7 @@ def load_data_to_db():
                     history_rows,
                 )
 
-                # Safe refresh for df_latest
+            
                 cur.execute("TRUNCATE TABLE df_latest;")
                 execute_values(
                     cur,
