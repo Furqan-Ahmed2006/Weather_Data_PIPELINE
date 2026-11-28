@@ -1,19 +1,8 @@
-<<<<<<< HEAD
-psycopg2-binary
-python-dotenv
-pandas
-requests
-scikit-learn
-streamlit
-streamlit-autorefresh
-pytz
-=======
-requests
-pandas
-scikit-learn==1.7.2
-mysql-connector-python
-python-dotenv
-streamlit
-streamlit-autorefresh
-pytz
->>>>>>> b9d1a622314cbeca2dba4c8b816281b90ff2af60
+psycopg2-binary>=2.9.9
+python-dotenv>=1.0.0
+pandas>=2.0.0
+requests>=2.31.0
+scikit-learn>=1.3.0
+streamlit>=1.35.0
+streamlit-autorefresh>=1.0.1
+pytz>=2024.1
